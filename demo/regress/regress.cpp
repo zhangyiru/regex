@@ -41,10 +41,6 @@ using std::endl;
 
 #include "regress.h"
 
-#if defined(BOOST_MSVC) && defined(_DEBUG)
-#include <CRTDBG.H>
-#endif
-
 
 //
 // declare all our globals here:
@@ -74,13 +70,6 @@ void usage()
 
 int main(int argc, char * argv[])
 {
-#if defined(BOOST_MSVC) && defined(_DEBUG)
-   // turn on heap reporting at program exit:
-   int tmpFlag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
-   tmpFlag |= _CRTDBG_LEAK_CHECK_DF;
-   tmpFlag &= ~_CRTDBG_CHECK_CRT_DF;
-   _CrtSetDbgFlag( tmpFlag );
-#endif
    if(argc < 2)
        usage();
    int i;
@@ -111,7 +100,6 @@ int main(int argc, char * argv[])
       }
       cout << line << " lines, " << tests << " tests completed in file " << argv[i] << endl;
    }
-
    return error_count;
 }
 
@@ -137,7 +125,7 @@ istream& get_line(istream& is, nstring_type& s, char delim)
 {
    char c = (char)is.get();
    s.erase(s.begin(), s.end());
-   while((c != delim) && is.good())
+   while((c != delim) && (c != EOF))
    {
       s.append(1, c);
       c = (char)is.get();
@@ -176,7 +164,7 @@ istream& get_line(istream& is, string_type& s, char delim)
 {
    char c = (char)is.get();
    s.erase(s.begin(), s.end());
-   while((c != delim) && is.good())
+   while((c != delim) && (c != EOF))
    {
       s.append(1, c);
       c = (char)is.get();
@@ -204,7 +192,7 @@ jm_debug_alloc::jm_debug_alloc(const jm_debug_alloc& d)
 }
 jm_debug_alloc& jm_debug_alloc::operator=(const jm_debug_alloc& d)
 {
-   free_();
+   free();
    blocks = d.blocks;
    count = d.count;
    ++(*count);
@@ -219,11 +207,11 @@ jm_debug_alloc::~jm_debug_alloc()
    }
    else
    {
-      free_();
+      free();
       guard = 0;
    }
 }
-void jm_debug_alloc::free_()
+void jm_debug_alloc::free()
 {
     if(--(*count) == 0)
     {
@@ -237,7 +225,7 @@ void jm_debug_alloc::free_()
     }
 }
 
-jm_debug_alloc::pointer jm_debug_alloc::allocate(size_type n, void*)
+jm_debug_alloc::pointer jm_debug_alloc::allocate(size_type n, void* hint)
 {
    pointer p = new char[n + maxi(sizeof(size_type), boost::re_detail::padding_size)];
    *(size_type*)p = n;

@@ -1230,7 +1230,8 @@ bool perl_matcher<BidiIterator, Allocator, traits>::unwind(bool have_match)
       &perl_matcher<BidiIterator, Allocator, traits>::unwind_assertion,
       &perl_matcher<BidiIterator, Allocator, traits>::unwind_alt,
       &perl_matcher<BidiIterator, Allocator, traits>::unwind_repeater_counter,
-      &perl_matcher<BidiIterator, Allocator, traits>::unwind_extra_block,
+      &perl_matcher<BidiIterator, Allocator, traits>::
+    ,
       &perl_matcher<BidiIterator, Allocator, traits>::unwind_greedy_single_repeat,
       &perl_matcher<BidiIterator, Allocator, traits>::unwind_slow_dot_repeat,
       &perl_matcher<BidiIterator, Allocator, traits>::unwind_fast_dot_repeat,
@@ -1353,6 +1354,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::unwind_repeater_counter(bool
 template <class BidiIterator, class Allocator, class traits>
 bool perl_matcher<BidiIterator, Allocator, traits>::unwind_extra_block(bool)
 {
+   ++used_block_count;
    saved_extra_block* pmp = static_cast<saved_extra_block*>(m_backup_state);
    void* condemmed = m_stack_base;
    m_stack_base = pmp->base;
